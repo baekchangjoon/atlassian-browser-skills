@@ -1,5 +1,5 @@
 <#
-  launch-chrome.ps1 — start Chrome with the DevTools remote debugging port so
+  launch-chrome.ps1 - start Chrome with the DevTools remote debugging port so
   atl_cdp.ps1 / atl_cdp.py can attach.
 
   Uses a DEDICATED profile dir so it never disturbs the user's main Chrome and
