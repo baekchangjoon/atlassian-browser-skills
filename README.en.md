@@ -1,5 +1,7 @@
 # atlassian-browser-skills
 
+> 🌐 [한국어](README.md) · **English** (this page)
+
 Read/write **Jira & Confluence** from an LLM agent **when the Atlassian MCP and
 API tokens are blocked** by corporate security — by driving the user's own
 already-logged-in **local browser** (Safari/Chrome/Edge). No API token, no MCP.
