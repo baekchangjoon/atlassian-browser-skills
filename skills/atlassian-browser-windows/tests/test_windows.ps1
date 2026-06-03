@@ -21,10 +21,30 @@ param(
   [string]$ScriptsDir = (Join-Path $PSScriptRoot '..\scripts'),
   [string]$PsHost = 'powershell'
 )
-$ErrorActionPreference = 'Stop'
+# IMPORTANT: keep this 'Continue', not 'Stop'. Under PS 5.1, ANY stderr written
+# by the child PowerShell host is promoted to a terminating NativeCommandError
+# when ErrorActionPreference is 'Stop', which would abort the harness and mask
+# the child's real stdout/exit code. We capture the child's stderr explicitly
+# with 2>&1 instead.
+$ErrorActionPreference = 'Continue'
 $fail = 0
 function Pass($m) { Write-Host "  [PASS] $m" }
 function Bad($m)  { Write-Host "  [FAIL] $m"; $script:fail = 1 }
+
+# Run a script under the target PowerShell host as a separate process; return
+# stdout only ([Console]::Out), with the child's stderr surfaced for diagnostics.
+function Invoke-Child {
+  param([string[]]$ScriptArgs)
+  $tmpOut = (New-TemporaryFile).FullName
+  $tmpErr = (New-TemporaryFile).FullName
+  $p = Start-Process -FilePath $PsHost -NoNewWindow -Wait -PassThru `
+        -ArgumentList (@('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File') + $ScriptArgs) `
+        -RedirectStandardOutput $tmpOut -RedirectStandardError $tmpErr
+  $stdout = (Get-Content -Raw -ErrorAction SilentlyContinue $tmpOut)
+  $stderr = (Get-Content -Raw -ErrorAction SilentlyContinue $tmpErr)
+  Remove-Item $tmpOut, $tmpErr -ErrorAction SilentlyContinue
+  [pscustomobject]@{ Code = $p.ExitCode; Out = ($stdout  -as [string]); Err = ($stderr -as [string]) }
+}
 
 $cdp    = Join-Path $ScriptsDir 'atl_cdp.ps1'
 $launch = Join-Path $ScriptsDir 'launch-chrome.ps1'
@@ -42,20 +62,22 @@ foreach ($f in @($cdp, $launch)) {
 
 # 2. error path: no Chrome on the debug port → JSON {ok:false,status:0}, exit 1
 Write-Host "2. error path (no Chrome)"
-$out = & $PsHost -NoProfile -ExecutionPolicy Bypass -File $cdp -Method GET -Path /rest/api/3/myself 2>$null
-$code = $LASTEXITCODE
-$good = $true
-if ($code -ne 1) { $good = $false }
-try { $r = $out | ConvertFrom-Json } catch { $good = $false; $r = $null }
-if ($good -and ($r.ok -ne $false -or $r.status -ne 0 -or $r.error -notlike '*debug port*')) { $good = $false }
-if ($good) { Pass "no Chrome → JSON error, exit 1" }
-else { Bad "no-Chrome path wrong (exit $code): $out" }
+$r = Invoke-Child @($cdp, '-Method', 'GET', '-Path', '/rest/api/3/myself')
+Write-Host "    exit=$($r.Code)  stdout=$($r.Out)"
+if ($r.Err) { Write-Host "    stderr=$($r.Err)" }
+$json = $null
+try { $json = $r.Out | ConvertFrom-Json } catch {}
+if ($r.Code -eq 1 -and $json -and $json.ok -eq $false -and $json.status -eq 0 -and $json.error -like '*debug port*') {
+  Pass "no Chrome → JSON error, exit 1"
+} else {
+  Bad "no-Chrome path wrong (exit $($r.Code))"
+}
 
 # 3. parameter validation: invalid -Method rejected before any network call
 Write-Host "3. parameter validation"
-& $PsHost -NoProfile -ExecutionPolicy Bypass -File $cdp -Method INVALID -Path /rest/api/3/myself 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) { Pass "invalid -Method rejected (exit $LASTEXITCODE)" }
-else { Bad "invalid -Method was not rejected" }
+$r = Invoke-Child @($cdp, '-Method', 'INVALID', '-Path', '/rest/api/3/myself')
+if ($r.Code -ne 0) { Pass "invalid -Method rejected (exit $($r.Code))" }
+else { Bad "invalid -Method was not rejected (exit 0)" }
 
 Write-Host ""
 if ($fail -ne 0) { Write-Host "FAILED"; exit 1 }
