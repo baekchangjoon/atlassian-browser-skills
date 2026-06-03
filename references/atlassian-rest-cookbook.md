@@ -7,7 +7,7 @@ Chrome). The transport only does one thing:
 > logged-in Atlassian tab** and return `{status, ok, data}`.
 
 Because the request runs in the page origin, the browser session cookie (incl.
-corporate SSO) is sent automatically. You never handle tokens. You just pick the
+SSO) is sent automatically. You never handle tokens. You just pick the
 right **METHOD + PATH + BODY** from this cookbook.
 
 The transport scripts take exactly three inputs:

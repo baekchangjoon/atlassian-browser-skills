@@ -3,7 +3,7 @@
 > 🌐 [한국어](README.md) · **English** (this page)
 
 Read/write **Jira & Confluence** from an LLM agent **when the Atlassian MCP and
-API tokens are blocked** by corporate security — by driving the user's own
+API tokens are blocked or unavailable** — by driving the user's own
 already-logged-in **local browser** (Safari/Chrome/Edge). No API token, no MCP.
 
 ## Install
@@ -30,9 +30,9 @@ cp -r atlassian-browser-skills/skills/atlassian-browser-windows ~/.claude/skills
 
 ## The idea
 
-The corporate firewall blocks *external* access paths (the Atlassian MCP,
-personal API tokens). It does **not** block the browser the user already uses to
-open Jira/Confluence. So instead of an external API client, we execute a
+What's blocked are the *external* access paths (the Atlassian MCP, personal API
+tokens). The browser the user already uses to open Jira/Confluence is **not**
+blocked. So instead of an external API client, we execute a
 **same-origin `fetch()` inside the authenticated browser tab**, calling
 Atlassian's *own* REST API — the very endpoints the Jira/Confluence SPA uses.
 
@@ -74,7 +74,7 @@ The brief asked for the **lowest-dependency, most-accessible** Windows option.
 
 | option | install footprint | notes |
 |--------|-------------------|-------|
-| **CDP via PowerShell** (`atl_cdp.ps1`) | **nothing** — PS 5.1 + Chrome are already on every corporate Windows | ✅ recommended |
+| **CDP via PowerShell** (`atl_cdp.ps1`) | **nothing** — PS 5.1 + Chrome are already on virtually every Windows machine | ✅ recommended |
 | CDP via Python (`atl_cdp.py`) | Python only, **no pip** (stdlib WebSocket) | optional — only if you'd rather script in Python |
 | Playwright (`atl_playwright.py`) | `pip install playwright` | heaviest; only if already standardized on it |
 
@@ -131,6 +131,19 @@ Both print `{"status":200,"ok":true,"data":{...}}`. Pick endpoints from
 - Cloud (`*.atlassian.net`): Jira `/rest/api/3`, Confluence `/wiki/rest/api`.
 - Server/DC (self-hosted): Jira `/rest/api/2`, Confluence `/rest/api`; set the
   host filter (`ATL_HOST` / `-HostFilter`) to a substring of that host's URL.
+
+## Privacy
+
+This skill/plugin **collects, stores, and transmits no personal data.**
+
+- Everything runs **inside the user's own local browser session** (driven via
+  osascript on macOS or the Chrome DevTools Protocol on Windows).
+- The only network calls are *the user's browser → the user's own Atlassian
+  instance* — exactly what the browser already does. **Nothing is sent to any
+  third-party server** by this project.
+- It **never handles or stores** API tokens, passwords, or credentials; it relies
+  only on the browser's existing session cookie.
+- **No analytics, no telemetry**, no background data collection.
 
 ## Safety
 

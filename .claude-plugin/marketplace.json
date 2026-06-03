@@ -1,6 +1,6 @@
 {
   "name": "atlassian-browser-skills",
-  "description": "Agent skills to read/write Jira & Confluence through your already-logged-in local browser (Safari/Chrome/Edge) when the Atlassian MCP and API tokens are blocked by corporate security.",
+  "description": "Agent skills to read/write Jira & Confluence through your already-logged-in local browser (Safari/Chrome/Edge) when the Atlassian MCP and API tokens are blocked or unavailable.",
   "owner": {
     "name": "baekchangjoon",
     "url": "https://github.com/baekchangjoon"
