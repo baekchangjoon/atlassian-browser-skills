@@ -2,6 +2,16 @@
 
 > 🌐 [한국어](README.md) · **English** (this page)
 
+<p align="center">
+  <a href="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-macos.yml"><img alt="macOS tests" src="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-macos.yml/badge.svg"></a>
+  <a href="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-windows.yml"><img alt="Windows tests" src="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-windows.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+  <a href="https://github.com/baekchangjoon/atlassian-browser-skills/releases"><img alt="release" src="https://img.shields.io/github/v/release/baekchangjoon/atlassian-browser-skills?display_name=release&label=release"></a>
+  <a href="https://agentskills.io"><img alt="Skill" src="https://img.shields.io/badge/Skill-Claude%20Code%20%7C%20Cursor%20%7C%20Codex%20%7C%20Gemini%20CLI-blueviolet"></a>
+  <img alt="Platforms" src="https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows-informational">
+  <a href="README.md"><img alt="Docs" src="https://img.shields.io/badge/Docs-KO%20%7C%20EN-green"></a>
+</p>
+
 Read/write **Jira & Confluence** from an LLM agent **when the Atlassian MCP and
 API tokens are blocked or unavailable** — by driving the user's own
 already-logged-in **local browser** (Safari/Chrome/Edge). No API token, no MCP.

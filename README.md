@@ -2,6 +2,16 @@
 
 > 🌐 **한국어** (현재 문서) · [English](README.en.md)
 
+<p align="center">
+  <a href="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-macos.yml"><img alt="macOS tests" src="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-macos.yml/badge.svg"></a>
+  <a href="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-windows.yml"><img alt="Windows tests" src="https://github.com/baekchangjoon/atlassian-browser-skills/actions/workflows/test-atlassian-browser-windows.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+  <a href="https://github.com/baekchangjoon/atlassian-browser-skills/releases"><img alt="release" src="https://img.shields.io/github/v/release/baekchangjoon/atlassian-browser-skills?display_name=release&label=release"></a>
+  <a href="https://agentskills.io"><img alt="Skill" src="https://img.shields.io/badge/Skill-Claude%20Code%20%7C%20Cursor%20%7C%20Codex%20%7C%20Gemini%20CLI-blueviolet"></a>
+  <img alt="Platforms" src="https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows-informational">
+  <a href="README.en.md"><img alt="Docs" src="https://img.shields.io/badge/Docs-KO%20%7C%20EN-green"></a>
+</p>
+
 **Atlassian MCP·API 토큰이 막혀 있거나 쓸 수 없는 환경**에서, 사용자가 **이미 로그인해 둔 로컬 브라우저**(Safari/Chrome/Edge)를 구동해 LLM 에이전트로 **Jira·Confluence를 읽고 쓰는** 스킬 모음입니다. API 토큰도, MCP도 필요 없습니다.
 
 ## 설치
