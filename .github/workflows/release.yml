@@ -1,0 +1,50 @@
+name: release
+
+# One-click release. Trigger manually from the Actions tab (Run workflow) with a
+# semver tag. Runs the Agent Skills spec validation, then `gh skill publish`,
+# which creates the git tag + a GitHub release with auto-generated notes.
+#
+# Notes:
+# - publish CREATES the tag, so always use a NEW version. Re-using an existing
+#   version is an update, which the tag-protection ruleset blocks (by design).
+# - publish also tries to add the `agent-skills` topic; it already exists here, so
+#   that step is a no-op. (Editing topics needs more than contents:write, so if a
+#   future run errors on the topic step, add a PAT secret instead of github.token.)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (semver, e.g. v1.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: gh version
+        run: gh --version
+
+      - name: Validate skills against the Agent Skills spec
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh skill publish --dry-run
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::version must look like vX.Y.Z (got: '$VERSION')"
+            exit 1
+          fi
+          gh skill publish --tag "$VERSION"
