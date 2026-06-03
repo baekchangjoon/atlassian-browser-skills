@@ -6,6 +6,28 @@ Read/write **Jira & Confluence** from an LLM agent **when the Atlassian MCP and
 API tokens are blocked** by corporate security — by driving the user's own
 already-logged-in **local browser** (Safari/Chrome/Edge). No API token, no MCP.
 
+## Install
+
+### Claude Code (plugin marketplace — recommended)
+This repo is a Claude Code plugin marketplace. Inside Claude Code:
+```text
+/plugin marketplace add baekchangjoon/atlassian-browser-skills
+/plugin install atlassian-browser-skills@atlassian-browser-skills
+/reload-plugins
+```
+Installing brings in both skills (`atlassian-browser-macos`, `atlassian-browser-windows`); the model invokes the right one per OS and task.
+
+### Skills only (no plugin system)
+Works in any [Agent Skills](https://agentskills.io)-compatible agent (Claude Code/Claude.ai/Cursor/Gemini CLI, …) — just copy the skill folder:
+```bash
+git clone https://github.com/baekchangjoon/atlassian-browser-skills
+cp -r atlassian-browser-skills/skills/atlassian-browser-macos   ~/.claude/skills/   # macOS
+cp -r atlassian-browser-skills/skills/atlassian-browser-windows ~/.claude/skills/   # Windows
+```
+> The skills reference a shared cookbook at the repo root
+> (`references/atlassian-rest-cookbook.md`). When copying a skill standalone, keep
+> that path alongside it (it is bundled automatically with the plugin install).
+
 ## The idea
 
 The corporate firewall blocks *external* access paths (the Atlassian MCP,

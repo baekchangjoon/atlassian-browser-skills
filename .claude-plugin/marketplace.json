@@ -1,0 +1,27 @@
+{
+  "name": "atlassian-browser-skills",
+  "description": "Agent skills to read/write Jira & Confluence through your already-logged-in local browser (Safari/Chrome/Edge) when the Atlassian MCP and API tokens are blocked by corporate security.",
+  "owner": {
+    "name": "baekchangjoon",
+    "url": "https://github.com/baekchangjoon"
+  },
+  "plugins": [
+    {
+      "name": "atlassian-browser-skills",
+      "source": "./",
+      "description": "Read/write Jira & Confluence via your already-logged-in local browser (Safari/Chrome/Edge) when the Atlassian MCP and API tokens are blocked - no API token, no MCP. Includes a macOS skill (osascript to Safari/Chrome) and a Windows skill (Chrome DevTools Protocol).",
+      "version": "1.0.0",
+      "category": "productivity",
+      "tags": [
+        "jira",
+        "confluence",
+        "atlassian",
+        "browser",
+        "macos",
+        "windows"
+      ],
+      "homepage": "https://github.com/baekchangjoon/atlassian-browser-skills",
+      "license": "MIT"
+    }
+  ]
+}
