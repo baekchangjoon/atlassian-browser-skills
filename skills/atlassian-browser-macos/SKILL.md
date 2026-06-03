@@ -1,6 +1,7 @@
 ---
 name: atlassian-browser-macos
 description: Use to read or write Jira / Confluence (create / update / delete / comment / transition issues and pages, run JQL/CQL) on macOS when the Atlassian MCP and API tokens are blocked or unavailable. Drives the user's already-logged-in Safari OR Google Chrome tab via osascript and calls Atlassian's own REST API from inside the authenticated browser session — no API token, no MCP.
+license: MIT
 ---
 
 # Atlassian via Safari or Chrome (macOS)

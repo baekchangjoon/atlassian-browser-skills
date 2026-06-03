@@ -1,6 +1,7 @@
 ---
 name: atlassian-browser-windows
 description: Use to read or write Jira / Confluence (create / update / delete / comment / transition issues and pages, run JQL/CQL) on Windows when the Atlassian MCP and API tokens are blocked or unavailable. Attaches to a Chrome tab via the DevTools remote-debugging port and calls Atlassian's own REST API from inside the authenticated browser session — no API token, no MCP. Zero-install path uses built-in PowerShell.
+license: MIT
 ---
 
 # Atlassian via Chrome DevTools Protocol (Windows)
