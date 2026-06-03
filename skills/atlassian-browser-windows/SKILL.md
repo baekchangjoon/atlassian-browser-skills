@@ -183,6 +183,16 @@ PS> powershell -File scripts\atl_cdp.ps1 -Method DELETE -Path /rest/api/3/issue/
 
 ## Testing
 
+Automated, CI-safe checks (parse, no-Chrome error path, parameter validation —
+no browser/debug port needed), run under both PowerShell hosts:
+```powershell
+powershell -ExecutionPolicy Bypass -File skills\atlassian-browser-windows\tests\test_windows.ps1 -PsHost powershell
+pwsh       -ExecutionPolicy Bypass -File skills\atlassian-browser-windows\tests\test_windows.ps1 -PsHost pwsh
+```
+Run in CI by [`.github/workflows/test-atlassian-browser-windows.yml`](../../.github/workflows/test-atlassian-browser-windows.yml)
+(PS 5.1 + 7 matrix) on every PR to `main` and on merge.
+
+Manual checks against a live tab:
 ```powershell
 # 1) is the debug port up? (run before anything else)
 Invoke-RestMethod http://127.0.0.1:9222/json | Select-Object type, url

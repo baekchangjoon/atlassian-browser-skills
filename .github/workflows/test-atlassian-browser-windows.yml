@@ -13,70 +13,26 @@ on:
       - '.github/workflows/test-atlassian-browser-windows.yml'
 
 jobs:
-  # ── PowerShell syntax + error-path tests (PS 5.1 and PS 7+) ──────────────
+  # ── PowerShell parse + error-path tests, under PS 5.1 and PS 7+ ───────────
+  # NOTE: `shell:` cannot use the matrix context, so the step shell is fixed to
+  # pwsh and the matrix host (powershell / pwsh) is invoked inside `run:`, where
+  # the matrix context IS available. The test logic lives in tests/test_windows.ps1.
   test-powershell:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         shell: [powershell, pwsh]
-      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Syntax check — atl_cdp.ps1 (${{ matrix.shell }})
-        shell: ${{ matrix.shell }}
-        run: |
-          $errors = $null
-          $null = [System.Management.Automation.Language.Parser]::ParseFile(
-            "${{ github.workspace }}\skills\atlassian-browser-windows\scripts\atl_cdp.ps1",
-            [ref]$null, [ref]$errors
-          )
-          if ($errors.Count -gt 0) { throw "Parse errors:`n$($errors | Out-String)" }
-          Write-Host "atl_cdp.ps1: syntax OK"
-
-      - name: Syntax check — launch-chrome.ps1 (${{ matrix.shell }})
-        shell: ${{ matrix.shell }}
-        run: |
-          $errors = $null
-          $null = [System.Management.Automation.Language.Parser]::ParseFile(
-            "${{ github.workspace }}\skills\atlassian-browser-windows\scripts\launch-chrome.ps1",
-            [ref]$null, [ref]$errors
-          )
-          if ($errors.Count -gt 0) { throw "Parse errors:`n$($errors | Out-String)" }
-          Write-Host "launch-chrome.ps1: syntax OK"
-
-      # Chrome is not running in CI — the script should exit 1 and emit a
-      # well-formed JSON error object describing the missing debug port.
-      - name: Error path — no Chrome → expect JSON error (${{ matrix.shell }})
-        shell: ${{ matrix.shell }}
-        run: |
-          $script = "${{ github.workspace }}\skills\atlassian-browser-windows\scripts\atl_cdp.ps1"
-          $output = & ${{ matrix.shell }} -ExecutionPolicy Bypass -File $script `
-            -Method GET -Path /rest/api/3/myself 2>$null
-          if ($LASTEXITCODE -ne 1) {
-            throw "Expected exit code 1 when Chrome is not running, got $LASTEXITCODE"
-          }
-          $result = $output | ConvertFrom-Json
-          if ($result.ok -ne $false)    { throw "Expected ok:false, got: $($result.ok)" }
-          if ($result.status -ne 0)     { throw "Expected status:0, got: $($result.status)" }
-          if ($result.error -notlike "*debug port*") {
-            throw "Expected error message about debug port, got: $($result.error)"
-          }
-          Write-Host "Got expected error JSON: $output"
-
-      # Invalid method name should fail PS parameter validation (exit != 0)
-      # before any network call is made.
-      - name: Parameter validation — bad method rejected (${{ matrix.shell }})
-        shell: ${{ matrix.shell }}
-        run: |
-          $script = "${{ github.workspace }}\skills\atlassian-browser-windows\scripts\atl_cdp.ps1"
-          & ${{ matrix.shell }} -ExecutionPolicy Bypass -File $script `
-            -Method INVALID -Path /rest/api/3/myself 2>$null
-          if ($LASTEXITCODE -eq 0) {
-            throw "Expected non-zero exit for invalid -Method value"
-          }
-          Write-Host "Invalid method correctly rejected (exit $LASTEXITCODE)"
+      - name: Run Windows transport tests (${{ matrix.shell }})
+        shell: pwsh
+        run: >
+          & ${{ matrix.shell }} -NoProfile -ExecutionPolicy Bypass
+          -File skills/atlassian-browser-windows/tests/test_windows.ps1
+          -PsHost ${{ matrix.shell }}
 
   # ── Python syntax check ───────────────────────────────────────────────────
   test-python:
