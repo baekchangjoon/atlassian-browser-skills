@@ -118,4 +118,89 @@ Always JSON: `{"status":200,"ok":true,"data":{...}}`. Parse it yourself.
 - Prefer this only when MCP/API are actually unavailable; if the Atlassian MCP or
   a sanctioned API path exists, use that instead.
 
-See `references/atlassian-rest-cookbook.md` for the full endpoint reference.
+## Examples
+
+Concrete input → output (Jira Cloud; `SH` = `atl_safari.sh` or `atl_chrome_mac.sh`).
+
+**Read the current user**
+```console
+$ skills/atlassian-browser-macos/scripts/atl_safari.sh GET /rest/api/3/myself
+{"status":200,"ok":true,"data":{"accountId":"5b10...","emailAddress":"you@corp.com"}}
+```
+
+**Create an issue, then delete it (self-clean demo)**
+```console
+$ "$SH" POST /rest/api/3/issue '{"fields":{"project":{"key":"ABC"},"issuetype":{"name":"Task"},"summary":"demo"}}'
+{"status":201,"ok":true,"data":{"id":"10110","key":"ABC-42"}}
+$ "$SH" DELETE /rest/api/3/issue/ABC-42
+{"status":204,"ok":true,"data":""}
+```
+
+**Search with JQL (bounded query required)**
+```console
+$ "$SH" POST /rest/api/3/search/jql '{"jql":"project = ABC ORDER BY created DESC","maxResults":3,"fields":["summary"]}'
+{"status":200,"ok":true,"data":{"issues":[{"key":"ABC-7","fields":{"summary":"..."}}]}}
+```
+
+## Decision rules (IF → THEN)
+
+- **IF** a call returns `inject failed: ... Allow JavaScript from Apple Events`
+  **THEN** the one-time toggle is off — stop and do the setup steps; do **not** retry blindly.
+- **IF** `status` is `401`/`403` **THEN** the tab isn't logged in (or it's the wrong
+  tab) — have the user log into the site, then retry.
+- **IF** `status` is `404` on a valid id **THEN** the base path is wrong — switch
+  Cloud `/rest/api/3` ↔ DC `/rest/api/2` (and `/wiki` for Confluence Cloud).
+- **IF** the host is `*.atlassian.net` **THEN** use Cloud paths (ADF bodies, `/wiki`
+  for Confluence); **ELSE** assume Server/DC (plain-text bodies, no `/wiki`).
+- **IF** JQL search returns `400 Unbounded JQL` **THEN** add a restriction
+  (e.g. `project = ABC`) — `search/jql` rejects unrestricted queries.
+- **IF** the action is a write (`POST`/`PUT`/`DELETE`) **THEN** state the target and
+  get approval before running.
+
+## Anti-patterns & pitfalls
+
+- **Don't scrape the DOM.** Call the REST API via `fetch` — DOM selectors break on
+  every Atlassian UI change.
+- **Don't add an `Authorization` header.** The session cookie already authenticates
+  the same-origin request; an injected token would be wrong and may be blocked.
+- **Don't poll-retry the `Allow JavaScript from Apple Events` error** — it never
+  succeeds until the user flips the toggle.
+- **Don't forget the version bump** on Confluence updates: a `PUT` without
+  `version.number = current + 1` fails with `409`.
+- **Don't assume Confluence `DELETE` purges** — it trashes first; purge with
+  `?status=trashed`.
+- **Don't reuse another issue's transition ids** — always `GET …/transitions`
+  first; ids differ per workflow.
+
+## Testing
+
+```bash
+# 1) plumbing only — expect a clean error, NO external call:
+ATL_HOST=__none__ scripts/atl_safari.sh GET /rest/api/3/myself
+#    → {"status":0,"ok":false,"error":"no tab whose URL contains '__none__' ..."}
+
+# 2) with a logged-in tab open — expect "status":200:
+scripts/atl_safari.sh    GET /rest/api/3/myself
+scripts/atl_chrome_mac.sh GET /rest/api/3/myself
+
+# 3) full self-clean CRUD (writes — get approval first):
+#    create → read → update → comment → transition → delete, then GET → expect 404.
+
+# syntax checks:
+bash -n scripts/atl_safari.sh scripts/atl_chrome_mac.sh
+osacompile -o /tmp/_t.scpt scripts/safari_atl.applescript && rm /tmp/_t.scpt
+osacompile -o /tmp/_t.scpt scripts/chrome_atl.applescript && rm /tmp/_t.scpt
+```
+
+## Changelog
+
+- **1.1.0** — add Google Chrome transport (`atl_chrome_mac.sh` +
+  `chrome_atl.applescript`) alongside Safari; both use the live logged-in session.
+- **1.0.0** — initial Safari transport via osascript + REST cookbook.
+
+## References
+
+- [`references/troubleshooting.md`](references/troubleshooting.md) — error → cause →
+  fix table for this skill.
+- [`../../references/atlassian-rest-cookbook.md`](../../references/atlassian-rest-cookbook.md)
+  — full Jira/Confluence endpoint + payload reference (Cloud & DC).

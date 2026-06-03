@@ -119,4 +119,96 @@ Always JSON: `{"status":200,"ok":true,"data":{...}}`. Parse it yourself.
   Never bulk-delete without explicit confirmation.
 - Prefer this only when MCP/API are actually unavailable.
 
-See `references/atlassian-rest-cookbook.md` for the full endpoint reference.
+## Examples
+
+Concrete input → output (Jira Cloud). Tools used: `powershell`, `chrome.exe`,
+`launch-chrome.ps1`, `atl_cdp.ps1` (which calls `Invoke-RestMethod` on
+`http://127.0.0.1:9222/json` and opens a `System.Net.WebSockets.ClientWebSocket`).
+
+**Start Chrome on the debug port, then read the current user**
+```console
+PS> powershell -ExecutionPolicy Bypass -File scripts\launch-chrome.ps1
+PS> powershell -ExecutionPolicy Bypass -File scripts\atl_cdp.ps1 -Method GET -Path /rest/api/3/myself
+{"status":200,"ok":true,"data":{"accountId":"5b10...","emailAddress":"you@corp.com"}}
+```
+
+**Create an issue, then delete it (self-clean demo)**
+```console
+PS> powershell -File scripts\atl_cdp.ps1 -Method POST -Path /rest/api/3/issue -Body '{"fields":{"project":{"key":"ABC"},"issuetype":{"name":"Task"},"summary":"demo"}}'
+{"status":201,"ok":true,"data":{"id":"10110","key":"ABC-42"}}
+PS> powershell -File scripts\atl_cdp.ps1 -Method DELETE -Path /rest/api/3/issue/ABC-42
+{"status":204,"ok":true,"data":""}
+```
+
+**Same call, Python alternative (no pip):**
+```console
+> python scripts\atl_cdp.py GET /rest/api/3/myself
+{"status":200,"ok":true,"data":{"accountId":"5b10..."}}
+```
+
+## Decision rules (IF → THEN)
+
+- **IF** `atl_cdp.ps1` prints `cannot reach Chrome debug port` **THEN** Chrome
+  isn't on the port — run `launch-chrome.ps1` first; do **not** retry blindly.
+- **IF** you get `websocket connect failed` **THEN** Chrome was launched without
+  `--remote-allow-origins=*` (Chrome ≥111 rejects the DevTools WebSocket) — relaunch with it.
+- **IF** `launch-chrome.ps1` opens a window but the port has no tabs **THEN** an
+  existing Chrome with that profile swallowed the flag — quit Chrome fully, or use
+  the dedicated `--user-data-dir` profile.
+- **IF** `status` is `401`/`403` **THEN** the debug window isn't logged in — log
+  into the site there once (cookies persist in the profile), then retry.
+- **IF** `status` is `404` on a valid id **THEN** switch Cloud `/rest/api/3` ↔ DC
+  `/rest/api/2` (and `/wiki` for Confluence Cloud).
+- **IF** the host is `*.atlassian.net` **THEN** use Cloud paths (ADF bodies,
+  `/wiki` for Confluence); **ELSE** assume Server/DC.
+- **IF** JQL returns `400 Unbounded JQL` **THEN** add a restriction like `project = ABC`.
+- **IF** the action is a write (`POST`/`PUT`/`DELETE`) **THEN** state the target and
+  get approval before running.
+
+## Anti-patterns & pitfalls
+
+- **Don't launch the debug port on your *main* profile while Chrome is running** —
+  the flag is silently ignored. Use a dedicated `--user-data-dir`, or quit first.
+- **Don't omit `--remote-allow-origins=*`** — the WebSocket upgrade is rejected.
+- **Don't reach for Python or Playwright by default** — `atl_cdp.ps1` (built-in
+  PowerShell) needs nothing installed; the others are optional.
+- **Don't scrape the DOM** — call the REST API via in-page `fetch`.
+- **Don't add an `Authorization` header** — the session cookie authenticates the
+  same-origin request.
+- **Don't forget the Confluence version bump** (`PUT` needs `version.number = current + 1`)
+  and that `DELETE` only trashes (purge with `?status=trashed`).
+
+## Testing
+
+```powershell
+# 1) is the debug port up? (run before anything else)
+Invoke-RestMethod http://127.0.0.1:9222/json | Select-Object type, url
+#    from any shell you can instead use:  curl http://127.0.0.1:9222/json
+
+# 2) plumbing only — expect a clean error, NO external call:
+powershell -File scripts\atl_cdp.ps1 -Method GET -Path /rest/api/3/myself -HostFilter __none__
+#    → {"status":0,"ok":false,"error":"no Chrome tab whose URL contains '__none__' ..."}
+
+# 3) with a logged-in debug tab — expect "status":200:
+powershell -File scripts\atl_cdp.ps1 -Method GET -Path /rest/api/3/myself
+
+# 4) full self-clean CRUD (writes — get approval first):
+#    create → read → update → comment → transition → delete, then GET → expect 404.
+```
+```bash
+# syntax-check the Python client (cross-checks the shared JS payload too):
+python -m py_compile scripts/atl_cdp.py scripts/atl_playwright.py
+```
+
+## Changelog
+
+- **1.0.0** — Chrome DevTools Protocol transport: PowerShell client (`atl_cdp.ps1`,
+  zero-install), pure-stdlib Python client (`atl_cdp.py`), Playwright client
+  (`atl_playwright.py`), and `launch-chrome.ps1` helper.
+
+## References
+
+- [`references/troubleshooting.md`](references/troubleshooting.md) — error → cause →
+  fix table for this skill.
+- [`../../references/atlassian-rest-cookbook.md`](../../references/atlassian-rest-cookbook.md)
+  — full Jira/Confluence endpoint + payload reference (Cloud & DC).
