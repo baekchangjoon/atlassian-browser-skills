@@ -1,13 +1,13 @@
 <#
-  test_windows.ps1 — CI-safe tests for the Windows Chrome DevTools Protocol
+  test_windows.ps1 - CI-safe tests for the Windows Chrome DevTools Protocol
   transport. No Chrome / debug port / login needed, so it runs anywhere.
 
   Covers what is reachable without a running browser:
     1. atl_cdp.ps1 / launch-chrome.ps1 parse cleanly (current host's parser)
-    2. error path: no Chrome → well-formed JSON error, exit code 1
+    2. error path: no Chrome -> well-formed JSON error, exit code 1
     3. parameter validation: invalid -Method is rejected before any network call
 
-  Driving Chrome itself is NOT tested — it needs a logged-in debug tab, which CI
+  Driving Chrome itself is NOT tested - it needs a logged-in debug tab, which CI
   does not have.
 
   Re-runs atl_cdp.ps1 as a child of -PsHost so the script is exercised under the
@@ -60,7 +60,7 @@ foreach ($f in @($cdp, $launch)) {
   else { Pass "$name parses" }
 }
 
-# 2. error path: no Chrome on the debug port → JSON {ok:false,status:0}, exit 1
+# 2. error path: no Chrome on the debug port -> JSON {ok:false,status:0}, exit 1
 Write-Host "2. error path (no Chrome)"
 $r = Invoke-Child @($cdp, '-Method', 'GET', '-Path', '/rest/api/3/myself')
 Write-Host "    exit=$($r.Code)  stdout=$($r.Out)"
@@ -68,7 +68,7 @@ if ($r.Err) { Write-Host "    stderr=$($r.Err)" }
 $json = $null
 try { $json = $r.Out | ConvertFrom-Json } catch {}
 if ($r.Code -eq 1 -and $json -and $json.ok -eq $false -and $json.status -eq 0 -and $json.error -like '*debug port*') {
-  Pass "no Chrome → JSON error, exit 1"
+  Pass "no Chrome -> JSON error, exit 1"
 } else {
   Bad "no-Chrome path wrong (exit $($r.Code))"
 }

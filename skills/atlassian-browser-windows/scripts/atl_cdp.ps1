@@ -1,5 +1,5 @@
 <#
-  atl_cdp.ps1 — run an authenticated Atlassian REST call inside a Chrome tab via
+  atl_cdp.ps1 - run an authenticated Atlassian REST call inside a Chrome tab via
   the Chrome DevTools Protocol (remote debugging port). No API token, no MCP, no
   pip install: pure Windows PowerShell (5.1+, preinstalled). Uses the browser's
   existing session cookie via a same-origin fetch().
@@ -38,12 +38,12 @@ function Fail($msg) {
 try {
   $targets = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/json" -TimeoutSec 5
 } catch {
-  Fail "cannot reach Chrome debug port $Port — launch Chrome with --remote-debugging-port=$Port (see launch-chrome.ps1). $($_.Exception.Message)"
+  Fail "cannot reach Chrome debug port $Port - launch Chrome with --remote-debugging-port=$Port (see launch-chrome.ps1). $($_.Exception.Message)"
 }
 
 $tab = $targets | Where-Object { $_.type -eq 'page' -and $_.url -like "*$HostFilter*" } | Select-Object -First 1
 if (-not $tab) {
-  Fail "no Chrome tab whose URL contains '$HostFilter' — open your Atlassian site in the debug Chrome window first"
+  Fail "no Chrome tab whose URL contains '$HostFilter' - open your Atlassian site in the debug Chrome window first"
 }
 $wsUrl = $tab.webSocketDebuggerUrl
 
