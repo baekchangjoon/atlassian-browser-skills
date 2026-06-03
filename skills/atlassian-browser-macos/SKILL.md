@@ -174,6 +174,15 @@ $ "$SH" POST /rest/api/3/search/jql '{"jql":"project = ABC ORDER BY created DESC
 
 ## Testing
 
+Automated, CI-safe checks (bash syntax, AppleScript compile, arg validation,
+generated-JS validity — no browser/Automation needed):
+```bash
+bash skills/atlassian-browser-macos/tests/test_macos.sh
+```
+Run in CI by [`.github/workflows/test-atlassian-browser-macos.yml`](../../.github/workflows/test-atlassian-browser-macos.yml)
+on every PR to `main` and on merge.
+
+Manual checks against a live tab:
 ```bash
 # 1) plumbing only — expect a clean error, NO external call:
 ATL_HOST=__none__ scripts/atl_safari.sh GET /rest/api/3/myself
