@@ -1,0 +1,5 @@
+# session tooling / local memory — not part of the project
+.remember/
+
+# macOS
+.DS_Store
