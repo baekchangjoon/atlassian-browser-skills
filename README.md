@@ -4,6 +4,26 @@
 
 회사 보안 때문에 **Atlassian MCP·API 토큰이 막힌 환경**에서, 사용자가 **이미 로그인해 둔 로컬 브라우저**(Safari/Chrome/Edge)를 구동해 LLM 에이전트로 **Jira·Confluence를 읽고 쓰는** 스킬 모음입니다. API 토큰도, MCP도 필요 없습니다.
 
+## 설치
+
+### Claude Code (플러그인 마켓플레이스 — 권장)
+이 저장소는 Claude Code 플러그인 마켓플레이스입니다. Claude Code 안에서:
+```text
+/plugin marketplace add baekchangjoon/atlassian-browser-skills
+/plugin install atlassian-browser-skills@atlassian-browser-skills
+/reload-plugins
+```
+설치하면 두 스킬(`atlassian-browser-macos`, `atlassian-browser-windows`)이 함께 들어오고, OS·작업에 따라 모델이 알아서 호출합니다.
+
+### 스킬만 직접 설치 (플러그인 없이)
+[Agent Skills](https://agentskills.io) 호환 에이전트(Claude Code/Claude.ai/Cursor/Gemini CLI 등) 어디서나 스킬 폴더만 복사해 쓸 수 있습니다:
+```bash
+git clone https://github.com/baekchangjoon/atlassian-browser-skills
+cp -r atlassian-browser-skills/skills/atlassian-browser-macos   ~/.claude/skills/   # macOS
+cp -r atlassian-browser-skills/skills/atlassian-browser-windows ~/.claude/skills/   # Windows
+```
+> 스킬이 참조하는 공용 cookbook은 저장소 루트의 `references/atlassian-rest-cookbook.md`에 있습니다. 스킬만 떼어 쓸 땐 그 경로도 함께 두세요(플러그인 설치 시에는 자동 포함).
+
 ## 아이디어
 
 회사 방화벽이 막는 것은 *외부* 접근 경로(Atlassian MCP, 개인 API 토큰)입니다. 정작 사용자가 평소 Jira/Confluence를 여는 **브라우저 자체는 막지 않습니다**. 그래서 외부 API 클라이언트를 쓰는 대신, **인증된 브라우저 탭 안에서 동일 출처(`same-origin`) `fetch()`를 실행**해 Atlassian *자기 자신의* REST API — Jira/Confluence SPA가 내부적으로 쓰는 바로 그 엔드포인트 — 를 호출합니다.
