@@ -2,7 +2,7 @@
 
 > 🌐 **한국어** (현재 문서) · [English](README.en.md)
 
-회사 보안 때문에 **Atlassian MCP·API 토큰이 막힌 환경**에서, 사용자가 **이미 로그인해 둔 로컬 브라우저**(Safari/Chrome/Edge)를 구동해 LLM 에이전트로 **Jira·Confluence를 읽고 쓰는** 스킬 모음입니다. API 토큰도, MCP도 필요 없습니다.
+**Atlassian MCP·API 토큰이 막혀 있거나 쓸 수 없는 환경**에서, 사용자가 **이미 로그인해 둔 로컬 브라우저**(Safari/Chrome/Edge)를 구동해 LLM 에이전트로 **Jira·Confluence를 읽고 쓰는** 스킬 모음입니다. API 토큰도, MCP도 필요 없습니다.
 
 ## 설치
 
@@ -26,7 +26,7 @@ cp -r atlassian-browser-skills/skills/atlassian-browser-windows ~/.claude/skills
 
 ## 아이디어
 
-회사 방화벽이 막는 것은 *외부* 접근 경로(Atlassian MCP, 개인 API 토큰)입니다. 정작 사용자가 평소 Jira/Confluence를 여는 **브라우저 자체는 막지 않습니다**. 그래서 외부 API 클라이언트를 쓰는 대신, **인증된 브라우저 탭 안에서 동일 출처(`same-origin`) `fetch()`를 실행**해 Atlassian *자기 자신의* REST API — Jira/Confluence SPA가 내부적으로 쓰는 바로 그 엔드포인트 — 를 호출합니다.
+막혀 있는 것은 *외부* 접근 경로(Atlassian MCP, 개인 API 토큰)입니다. 정작 사용자가 평소 Jira/Confluence를 여는 **브라우저 자체는 막히지 않습니다**. 그래서 외부 API 클라이언트를 쓰는 대신, **인증된 브라우저 탭 안에서 동일 출처(`same-origin`) `fetch()`를 실행**해 Atlassian *자기 자신의* REST API — Jira/Confluence SPA가 내부적으로 쓰는 바로 그 엔드포인트 — 를 호출합니다.
 
 ```
 LLM 에이전트
@@ -134,6 +134,17 @@ SH=skills/atlassian-browser-macos/scripts/atl_safari.sh   # 또는 atl_chrome_ma
 
 - Cloud (`*.atlassian.net`): Jira `/rest/api/3`, Confluence `/wiki/rest/api`
 - Server/DC (자체 호스팅): Jira `/rest/api/2`, Confluence `/rest/api`. 호스트 필터(`ATL_HOST` / `-HostFilter`)를 해당 호스트 URL의 일부로 지정.
+
+## 개인정보 (Privacy)
+
+이 스킬/플러그인은 **개인정보를 수집·저장·전송하지 않습니다.**
+
+- 모든 동작은 **사용자의 로컬 브라우저 세션 안에서** 실행됩니다(macOS는 osascript, Windows는 Chrome DevTools Protocol).
+- 네트워크 호출은 *사용자 브라우저 → 사용자 자신의 Atlassian 인스턴스*가 전부입니다 — 평소 브라우저가 하던 그대로이며, **이 프로젝트가 제3자 서버로 보내는 데이터는 없습니다.**
+- API 토큰·비밀번호·자격증명을 **다루거나 저장하지 않습니다**(브라우저의 기존 세션 쿠키만 사용).
+- **분석·텔레메트리 없음**, 백그라운드 수집 없음.
+
+> 영어 버전: [README.en.md#privacy](README.en.md#privacy)
 
 ## 안전 수칙
 
