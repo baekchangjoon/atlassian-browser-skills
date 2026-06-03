@@ -31,7 +31,7 @@ Python/Playwright are optional extras, not requirements.
 
 | client | install | when |
 |--------|---------|------|
-| `scripts/atl_cdp.ps1` (PowerShell) | **nothing** — built into Windows | ✅ **use this** |
+| `scripts/atl_cdp.ps1` (PowerShell) | **nothing** — works on PS 5.1 (`powershell`) and PS 7+ (`pwsh`) | ✅ **use this** |
 | `scripts/atl_cdp.py` | Python only (pure stdlib, no pip) | optional — only if you'd rather script in Python |
 | `scripts/atl_playwright.py` | `pip install playwright` | optional — only if already standardized on Playwright |
 
@@ -68,6 +68,9 @@ main Chrome but needs one login.
 
 ## Usage (PowerShell — recommended)
 
+Works on both **PowerShell 5.1** (`powershell`) and **PowerShell 7+** (`pwsh`).
+Use whichever is available; substitute `pwsh` for `powershell` if preferred.
+
 ```powershell
 $PS = "scripts\atl_cdp.ps1"
 
@@ -80,13 +83,13 @@ powershell -ExecutionPolicy Bypass -File $PS -Method POST -Path /rest/api/3/sear
   -Body '{"jql":"project = ABC AND statusCategory != Done","maxResults":20,"fields":["summary","status"]}'
 
 # create / update / comment / transition / delete
-powershell ... -File $PS -Method POST   -Path /rest/api/3/issue -Body '{"fields":{"project":{"key":"ABC"},"issuetype":{"name":"Task"},"summary":"Hello"}}'
-powershell ... -File $PS -Method PUT    -Path /rest/api/3/issue/ABC-123 -Body '{"fields":{"summary":"New title"}}'
-powershell ... -File $PS -Method DELETE -Path /rest/api/3/issue/ABC-123
+powershell -ExecutionPolicy Bypass -File $PS -Method POST   -Path /rest/api/3/issue -Body '{"fields":{"project":{"key":"ABC"},"issuetype":{"name":"Task"},"summary":"Hello"}}'
+powershell -ExecutionPolicy Bypass -File $PS -Method PUT    -Path /rest/api/3/issue/ABC-123 -Body '{"fields":{"summary":"New title"}}'
+powershell -ExecutionPolicy Bypass -File $PS -Method DELETE -Path /rest/api/3/issue/ABC-123
 
 # Confluence (Cloud is under /wiki)
-powershell ... -File $PS -Method GET  -Path "/wiki/rest/api/content/123456?expand=body.storage,version"
-powershell ... -File $PS -Method POST -Path /wiki/rest/api/content -Body '{"type":"page","title":"New","space":{"key":"DOCS"},"body":{"storage":{"value":"<p>hi</p>","representation":"storage"}}}'
+powershell -ExecutionPolicy Bypass -File $PS -Method GET  -Path "/wiki/rest/api/content/123456?expand=body.storage,version"
+powershell -ExecutionPolicy Bypass -File $PS -Method POST -Path /wiki/rest/api/content -Body '{"type":"page","title":"New","space":{"key":"DOCS"},"body":{"storage":{"value":"<p>hi</p>","representation":"storage"}}}'
 ```
 
 ## Usage (Python stdlib alternative)

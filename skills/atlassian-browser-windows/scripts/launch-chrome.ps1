@@ -7,9 +7,13 @@
   instance with the same profile is already running). You log into Atlassian
   once in this window; cookies persist in the dedicated profile.
 
-  usage:
+  usage (PowerShell 5.1):
     powershell -ExecutionPolicy Bypass -File launch-chrome.ps1
     powershell -ExecutionPolicy Bypass -File launch-chrome.ps1 -Port 9222 -Url https://your.atlassian.net
+
+  usage (PowerShell 7+):
+    pwsh -ExecutionPolicy Bypass -File launch-chrome.ps1
+    pwsh -ExecutionPolicy Bypass -File launch-chrome.ps1 -Port 9222 -Url https://your.atlassian.net
 #>
 param(
   [int]$Port = 9222,

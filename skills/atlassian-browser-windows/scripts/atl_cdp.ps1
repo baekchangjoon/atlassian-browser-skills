@@ -74,7 +74,10 @@ $msg = @{
 } | ConvertTo-Json -Depth 10 -Compress
 
 # 3) Open WebSocket, send, read frames until we get the id:1 response.
-Add-Type -AssemblyName System.Net.WebSockets.Client -ErrorAction SilentlyContinue
+# PS 7+ (.NET Core): assembly must be loaded explicitly.
+# PS 5.1 (.NET Framework): ClientWebSocket is already in-process; Add-Type throws a
+# terminating error for this assembly name, so we swallow it.
+try { Add-Type -AssemblyName System.Net.WebSockets.Client } catch {}
 $ws = New-Object System.Net.WebSockets.ClientWebSocket
 $ct = [System.Threading.CancellationToken]::None
 try {
