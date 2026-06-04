@@ -65,6 +65,29 @@ skills/atlassian-browser-macos/scripts/atl_safari.sh    GET /rest/api/3/myself
 skills/atlassian-browser-macos/scripts/atl_chrome_mac.sh GET /rest/api/3/myself
 ```
 
+## Picking the site & browser (ask — don't guess)
+
+The scripts find the target tab by URL substring (`ATL_HOST`, default
+`atlassian`). Before the first call, establish two things — **by asking the
+user** if you don't already know:
+
+1. **Which browser** they're logged into: Safari → `atl_safari.sh`,
+   Chrome → `atl_chrome_mac.sh`.
+2. **The Atlassian site.** Cloud (`https://<site>.atlassian.net`) matches the
+   default `ATL_HOST` — no address needed as long as a logged-in tab is open.
+   Self-hosted (Server/DC) requires `ATL_HOST=<their-host>` — if the user hasn't
+   given the address, **ask for it**; never guess a hostname.
+
+To discover or confirm candidates, you may list open tab URLs (read-only):
+
+```bash
+osascript -e 'tell application "Safari" to get URL of every tab of every window'
+osascript -e 'tell application "Google Chrome" to get URL of every tab of every window'
+```
+
+If several Atlassian-looking tabs match (e.g. two sites), show them and ask the
+user which one to use, then set `ATL_HOST` to that hostname.
+
 ## Usage
 
 ```bash
@@ -167,6 +190,10 @@ $ "$SH" POST /rest/api/3/search/jql '{"jql":"project = ABC ORDER BY created DESC
 
 ## Decision rules (IF → THEN)
 
+- **IF** you don't know which browser the user is logged into, or the site is
+  self-hosted and you don't have its address **THEN** ask the user (optionally
+  listing open tab URLs to offer candidates) — never guess a hostname or fire
+  blind calls.
 - **IF** a call returns `inject failed: ... Allow JavaScript from Apple Events`
   **THEN** the one-time toggle is off — stop and do the setup steps; do **not** retry blindly.
 - **IF** `status` is `401`/`403` **THEN** the tab isn't logged in (or it's the wrong
@@ -228,6 +255,8 @@ osacompile -o /tmp/_t.scpt scripts/chrome_atl.applescript && rm /tmp/_t.scpt
 
 ## Changelog
 
+- **1.3.0** — "ask, don't guess" flow: establish browser + site by asking the
+  user (with read-only tab-URL listing to offer candidates) before the first call.
 - **1.2.0** — document safe output parsing (save to file + quoted `'PYEOF'`
   heredoc) and the matching anti-pattern / troubleshooting entry.
 - **1.1.0** — add Google Chrome transport (`atl_chrome_mac.sh` +

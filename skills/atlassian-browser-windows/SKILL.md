@@ -67,6 +67,23 @@ cookies/SSO carry over, so no new login — the trade-off is you must quit and
 relaunch your main Chrome. The dedicated-profile route above doesn't disturb your
 main Chrome but needs one login.
 
+## Picking the site (ask — don't guess)
+
+The clients find the target tab by URL substring (`ATL_HOST` / `-HostFilter`,
+default `atlassian`). Cloud (`https://<site>.atlassian.net`) matches the default —
+no address needed as long as a logged-in tab is open in the debug window.
+Self-hosted (Server/DC) requires the host filter set to their hostname — if the
+user hasn't given the address, **ask for it**; never guess a hostname.
+
+To discover or confirm candidates, list the debug window's tabs (read-only):
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:9222/json | Select-Object type, url
+```
+
+If several Atlassian-looking tabs match (e.g. two sites), show them and ask the
+user which one to use, then set the host filter to that hostname.
+
 ## Usage (PowerShell — recommended)
 
 Works on both **PowerShell 5.1** (`powershell`) and **PowerShell 7+** (`pwsh`).
@@ -152,6 +169,9 @@ PS> powershell -File scripts\atl_cdp.ps1 -Method DELETE -Path /rest/api/3/issue/
 
 ## Decision rules (IF → THEN)
 
+- **IF** the site is self-hosted and you don't have its address **THEN** ask the
+  user (optionally listing the debug window's tab URLs to offer candidates) —
+  never guess a hostname or fire blind calls.
 - **IF** `atl_cdp.ps1` prints `cannot reach Chrome debug port` **THEN** Chrome
   isn't on the port — run `launch-chrome.ps1` first; do **not** retry blindly.
 - **IF** you get `websocket connect failed` **THEN** Chrome was launched without
@@ -216,6 +236,8 @@ python -m py_compile scripts/atl_cdp.py scripts/atl_playwright.py
 
 ## Changelog
 
+- **1.1.0** — "ask, don't guess" flow: establish the site by asking the user
+  (with read-only debug-tab listing to offer candidates) before the first call.
 - **1.0.0** — Chrome DevTools Protocol transport: PowerShell client (`atl_cdp.ps1`,
   zero-install), pure-stdlib Python client (`atl_cdp.py`), Playwright client
   (`atl_playwright.py`), and `launch-chrome.ps1` helper.
