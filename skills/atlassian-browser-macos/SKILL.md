@@ -109,6 +109,28 @@ Always JSON: `{"status":200,"ok":true,"data":{...}}`. Parse it yourself.
 - `404` → Cloud vs DC base-path mismatch, or bad id/key.
 - `"Safari is not running"` / `"Google Chrome is not running"` / `"no tab whose URL contains ..."` → open & log into the site first.
 
+### Parsing the output safely
+
+Save the response to a file, then parse it with a **quoted heredoc** (`'PYEOF'`)
+so the shell never touches the Python code — no `\"` escaping needed:
+
+```bash
+"$SH" GET /rest/api/3/myself > /tmp/atl_resp.json
+
+python3 - /tmp/atl_resp.json <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(f"{d['status']}\t{d['ok']}")
+PYEOF
+```
+
+Never pipe into `python3 -c '...'` with `\"`-escaped quotes: inside shell single
+quotes the backslashes reach Python verbatim and fail with
+`SyntaxError: unexpected character after line continuation character`.
+Inside a `'PYEOF'` heredoc shell variables do **not** expand — pass values in
+via `sys.argv` or env instead. For simple field extraction, `jq -r '.data.key'`
+is an even shorter alternative.
+
 ## Rules
 
 - **Read freely.** Reads (`GET`, JQL/CQL search) need no approval.
@@ -172,6 +194,8 @@ $ "$SH" POST /rest/api/3/search/jql '{"jql":"project = ABC ORDER BY created DESC
   `?status=trashed`.
 - **Don't reuse another issue's transition ids** — always `GET …/transitions`
   first; ids differ per workflow.
+- **Don't parse the output with `\"`-escaped inline `python3 -c`** — use the
+  file + `'PYEOF'` heredoc pattern from [Output](#output).
 
 ## Testing
 
@@ -206,6 +230,7 @@ osacompile -o /tmp/_t.scpt scripts/chrome_atl.applescript && rm /tmp/_t.scpt
 
 - **1.1.0** — add Google Chrome transport (`atl_chrome_mac.sh` +
   `chrome_atl.applescript`) alongside Safari; both use the live logged-in session.
+  Document safe output parsing (save to file + quoted `'PYEOF'` heredoc).
 - **1.0.0** — initial Safari transport via osascript + REST cookbook.
 
 ## References

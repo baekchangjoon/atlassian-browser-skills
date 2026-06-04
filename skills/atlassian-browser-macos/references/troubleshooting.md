@@ -16,6 +16,7 @@ Error / symptom → cause → fix. The result envelope is always
 | Confluence page still in trash after `DELETE` | Cloud delete is two-stage | second call: `DELETE /wiki/rest/api/content/<id>?status=trashed` |
 | `status:0`, `error` contains `Failed to fetch` | network blocked, or wrong origin tab | run from a tab actually on the target site |
 | timeout after N ms | page busy or fetch never resolved | raise `ATL_TIMEOUT_MS`; confirm the tab is responsive |
+| `SyntaxError: unexpected character after line continuation character` while parsing the output | `\"`-escaped Python passed to inline `python3 -c` — the backslashes reach Python verbatim | save the output to a file and parse with a quoted heredoc (`python3 - file <<'PYEOF' … PYEOF`); see SKILL.md ▸ Output |
 
 ## Environment knobs
 
