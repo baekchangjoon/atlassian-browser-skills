@@ -228,9 +228,10 @@ osacompile -o /tmp/_t.scpt scripts/chrome_atl.applescript && rm /tmp/_t.scpt
 
 ## Changelog
 
+- **1.2.0** — document safe output parsing (save to file + quoted `'PYEOF'`
+  heredoc) and the matching anti-pattern / troubleshooting entry.
 - **1.1.0** — add Google Chrome transport (`atl_chrome_mac.sh` +
   `chrome_atl.applescript`) alongside Safari; both use the live logged-in session.
-  Document safe output parsing (save to file + quoted `'PYEOF'` heredoc).
 - **1.0.0** — initial Safari transport via osascript + REST cookbook.
 
 ## References
