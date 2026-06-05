@@ -38,6 +38,20 @@ cp -r atlassian-browser-skills/skills/atlassian-browser-windows ~/.claude/skills
 > (`references/atlassian-rest-cookbook.md`). When copying a skill standalone, keep
 > that path alongside it (it is bundled automatically with the plugin install).
 
+### Getting updates
+
+Third-party marketplaces have **auto-update OFF by default** in Claude Code, so
+new releases don't reach your install on their own. Pick one:
+
+- **Manual update** — when a new version ships:
+  ```text
+  /plugin marketplace update atlassian-browser-skills
+  /plugin update atlassian-browser-skills@atlassian-browser-skills
+  ```
+- **Enable auto-update** (one-time, recommended): `/plugin` → **Marketplaces**
+  tab → select `atlassian-browser-skills` → **Enable auto-update**. New versions
+  are then picked up automatically when Claude Code starts.
+
 ## The idea
 
 What's blocked are the *external* access paths (the Atlassian MCP, personal API

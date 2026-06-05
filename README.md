@@ -34,6 +34,19 @@ cp -r atlassian-browser-skills/skills/atlassian-browser-windows ~/.claude/skills
 ```
 > 스킬이 참조하는 공용 cookbook은 저장소 루트의 `references/atlassian-rest-cookbook.md`에 있습니다. 스킬만 떼어 쓸 땐 그 경로도 함께 두세요(플러그인 설치 시에는 자동 포함).
 
+### 업데이트 받기
+
+서드파티 마켓플레이스는 Claude Code에서 **자동 업데이트가 기본 꺼져** 있어, 새 버전이 릴리스돼도 설치본은 그대로입니다. 둘 중 하나를 선택하세요:
+
+- **수동 업데이트** — 새 버전이 나왔을 때:
+  ```text
+  /plugin marketplace update atlassian-browser-skills
+  /plugin update atlassian-browser-skills@atlassian-browser-skills
+  ```
+- **자동 업데이트 켜기** (1회 설정, 권장): `/plugin` → **Marketplaces** 탭 →
+  `atlassian-browser-skills` 선택 → **Enable auto-update**. 이후 Claude Code 시작 시
+  자동으로 최신 버전이 반영됩니다.
+
 ## 아이디어
 
 막혀 있는 것은 *외부* 접근 경로(Atlassian MCP, 개인 API 토큰)입니다. 정작 사용자가 평소 Jira/Confluence를 여는 **브라우저 자체는 막히지 않습니다**. 그래서 외부 API 클라이언트를 쓰는 대신, **인증된 브라우저 탭 안에서 동일 출처(`same-origin`) `fetch()`를 실행**해 Atlassian *자기 자신의* REST API — Jira/Confluence SPA가 내부적으로 쓰는 바로 그 엔드포인트 — 를 호출합니다.
