@@ -75,6 +75,35 @@ else
   done
 fi
 
+echo "5. UTF-8 round-trip through the transport's decode path"
+# The applescripts decode the payload with decodeURIComponent(escape(atob(…))).
+# Plain atob() yields a Latin-1 byte string, mojibaking non-ASCII (e.g. Korean).
+for f in safari_atl.applescript chrome_atl.applescript; do
+  if grep -q "decodeURIComponent(escape(atob(" "$SCRIPTS/$f"; then
+    pass "$f uses the UTF-8-safe decode expression"
+  else
+    bad "$f does not use decodeURIComponent(escape(atob(…)))"
+  fi
+done
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "  (node unavailable — skipping UTF-8 round-trip check)"
+else
+  B64="$(printf '한글 본문 — UTF-8 왕복 테스트' | base64 | tr -d '\n')"
+  if B64="$B64" node -e '
+    const orig = "한글 본문 — UTF-8 왕복 테스트";
+    const b64 = process.env.B64;
+    const good = decodeURIComponent(escape(atob(b64)));      // transport decode path
+    const bad  = atob(b64);                                   // pre-1.4.0 decode path
+    if (!Buffer.from(good, "utf8").equals(Buffer.from(orig, "utf8"))) process.exit(1);
+    if (bad === orig) process.exit(2);  // atob alone must NOT round-trip (else test is vacuous)
+  '; then
+    pass "base64 → decodeURIComponent(escape(atob())) is byte-identical (and atob alone is not)"
+  else
+    bad "UTF-8 round-trip failed (exit $?)"
+  fi
+fi
+
 echo
 if [ "$fail" -ne 0 ]; then echo "FAILED"; exit 1; fi
 echo "ALL PASSED"

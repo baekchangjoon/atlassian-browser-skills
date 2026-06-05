@@ -91,14 +91,16 @@ $seg   = New-Object System.ArraySegment[byte] (,$bytes)
 $ws.SendAsync($seg, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $ct).Wait()
 
 function Receive-Message($socket, $ct) {
+  # Accumulate raw bytes and decode ONCE at the end: decoding each 64KB chunk
+  # separately corrupts multibyte UTF-8 chars that straddle a chunk boundary.
   $buffer = New-Object byte[] 65536
-  $sb = New-Object System.Text.StringBuilder
+  $ms = New-Object System.IO.MemoryStream
   do {
     $rseg = New-Object System.ArraySegment[byte] (,$buffer)
     $res  = $socket.ReceiveAsync($rseg, $ct).Result
-    [void]$sb.Append([System.Text.Encoding]::UTF8.GetString($buffer, 0, $res.Count))
+    $ms.Write($buffer, 0, $res.Count)
   } while (-not $res.EndOfMessage)
-  return $sb.ToString()
+  return [System.Text.Encoding]::UTF8.GetString($ms.ToArray())
 }
 
 $deadline = [DateTime]::UtcNow.AddMilliseconds($TimeoutMs)

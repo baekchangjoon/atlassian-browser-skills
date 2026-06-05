@@ -34,6 +34,25 @@ jobs:
           -File skills/atlassian-browser-windows/tests/test_windows.ps1
           -PsHost ${{ matrix.shell }}
 
+  # ── UTF-8 e2e: real headless Chrome + local echo server (Korean round-trip,
+  # incl. a >64KB body so multibyte chars straddle the 64KB WebSocket reads) ──
+  test-utf8-e2e:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [powershell, pwsh]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: UTF-8 e2e round-trip (${{ matrix.shell }})
+        shell: pwsh
+        run: >
+          & ${{ matrix.shell }} -NoProfile -ExecutionPolicy Bypass
+          -File skills/atlassian-browser-windows/tests/test_windows_e2e.ps1
+          -PsHost ${{ matrix.shell }}
+
   # ── Python syntax check ───────────────────────────────────────────────────
   test-python:
     runs-on: windows-latest
