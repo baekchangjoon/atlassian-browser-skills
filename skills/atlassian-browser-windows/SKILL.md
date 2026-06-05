@@ -201,6 +201,13 @@ PS> powershell -File scripts\atl_cdp.ps1 -Method DELETE -Path /rest/api/3/issue/
   same-origin request.
 - **Don't forget the Confluence version bump** (`PUT` needs `version.number = current + 1`)
   and that `DELETE` only trashes (purge with `?status=trashed`).
+- **Don't re-encode non-ASCII (e.g. Korean) bodies yourself** — the transport is
+  UTF-8 safe end-to-end; pass the JSON body as-is.
+- **Don't rebuild a whole ADF document to change one part** — `GET` the current
+  body, keep the original nodes untouched, and construct only the replacement
+  nodes (tables and complex formatting are easy to corrupt otherwise).
+- **Don't trust a write containing non-ASCII text blindly** — `GET` the
+  issue/page back once and confirm the text round-tripped without mojibake.
 
 ## Testing
 
@@ -211,7 +218,9 @@ powershell -ExecutionPolicy Bypass -File skills\atlassian-browser-windows\tests\
 pwsh       -ExecutionPolicy Bypass -File skills\atlassian-browser-windows\tests\test_windows.ps1 -PsHost pwsh
 ```
 Run in CI by [`.github/workflows/test-atlassian-browser-windows.yml`](../../.github/workflows/test-atlassian-browser-windows.yml)
-(PS 5.1 + 7 matrix) on every PR to `main` and on merge.
+(PS 5.1 + 7 matrix) on every PR to `main` and on merge. CI additionally runs a
+UTF-8 e2e round-trip (`tests/test_windows_e2e.ps1`) against a real headless
+Chrome + local echo server — Korean bodies, including >64KB — no Atlassian needed.
 
 Manual checks against a live tab:
 ```powershell
@@ -236,6 +245,10 @@ python -m py_compile scripts/atl_cdp.py scripts/atl_playwright.py
 
 ## Changelog
 
+- **1.2.0** — UTF-8 hardening: decode WebSocket frames once from accumulated
+  bytes in `atl_cdp.ps1` (per-chunk decoding corrupted multibyte chars split
+  across 64KB reads); add a CI e2e UTF-8 round-trip test against real Chrome;
+  add non-ASCII/ADF anti-patterns.
 - **1.1.0** — "ask, don't guess" flow: establish the site by asking the user
   (with read-only debug-tab listing to offer candidates) before the first call.
 - **1.0.0** — Chrome DevTools Protocol transport: PowerShell client (`atl_cdp.ps1`,

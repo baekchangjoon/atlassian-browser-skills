@@ -223,6 +223,13 @@ $ "$SH" POST /rest/api/3/search/jql '{"jql":"project = ABC ORDER BY created DESC
   first; ids differ per workflow.
 - **Don't parse the output with `\"`-escaped inline `python3 -c`** — use the
   file + `'PYEOF'` heredoc pattern from [Output](#output).
+- **Don't re-encode non-ASCII (e.g. Korean) bodies yourself** — the transport is
+  UTF-8 safe end-to-end; pass the JSON body as-is.
+- **Don't rebuild a whole ADF document to change one part** — `GET` the current
+  body, keep the original nodes untouched, and construct only the replacement
+  nodes (tables and complex formatting are easy to corrupt otherwise).
+- **Don't trust a write containing non-ASCII text blindly** — `GET` the
+  issue/page back once and confirm the text round-tripped without mojibake.
 
 ## Testing
 
@@ -255,6 +262,9 @@ osacompile -o /tmp/_t.scpt scripts/chrome_atl.applescript && rm /tmp/_t.scpt
 
 ## Changelog
 
+- **1.4.0** — UTF-8-safe transport: decode the injected payload with
+  `decodeURIComponent(escape(atob(…)))` (plain `atob()` mojibaked non-ASCII
+  bodies); add UTF-8 round-trip test + non-ASCII/ADF anti-patterns.
 - **1.3.0** — "ask, don't guess" flow: establish browser + site by asking the
   user (with read-only tab-URL listing to offer candidates) before the first call.
 - **1.2.0** — document safe output parsing (save to file + quoted `'PYEOF'`

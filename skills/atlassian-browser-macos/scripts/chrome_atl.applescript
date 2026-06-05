@@ -35,9 +35,11 @@ on run argv
 		if targetTab is missing value then return "{\"status\":0,\"ok\":false,\"error\":\"no tab whose URL contains '" & hostFilter & "' — open the Atlassian site first\"}"
 
 		try
-			-- NOTE: eval(atob(...)) runs OUR OWN script (built by atl_chrome_mac.sh
+			-- NOTE: this eval runs OUR OWN script (built by atl_chrome_mac.sh
 			-- and base64-encoded only to avoid AppleScript string-escaping of JS).
-			execute targetTab javascript "eval(atob('" & b64 & "'))"
+			-- decodeURIComponent(escape(...)) re-reads atob()'s Latin-1 byte string
+			-- as UTF-8 — plain atob() would mojibake non-ASCII (e.g. Korean) bodies.
+			execute targetTab javascript "eval(decodeURIComponent(escape(atob('" & b64 & "'))))"
 		on error errMsg
 			return "{\"status\":0,\"ok\":false,\"error\":\"inject failed: " & errMsg & " (enable View > Developer > Allow JavaScript from Apple Events)\"}"
 		end try
